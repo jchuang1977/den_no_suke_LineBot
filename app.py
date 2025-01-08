@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, abort
+from flask import Flask, request, abort, url_for
 from linebot import (
  LineBotApi, WebhookHandler
 )
@@ -15,6 +15,8 @@ app = Flask(__name__)
 # 設定 LINE Bot 的認證資訊
 line_bot_api = LineBotApi(os.getenv('LINE_CHANNEL_ACCESS_TOKEN'))
 handler = WebhookHandler(os.getenv('LINE_CHANNEL_SECRET'))
+
+
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -56,7 +58,7 @@ def handle_message(event):
     user_id = event.source.user_id  
     message = event.message.text  
   
-    message_url = url_for('message', _external=True)  
+    message_url = url_for('message', _external=True)
     response_message = requests.post(message_url, data={  
         'user_id': user_id,  
         'message': message  
