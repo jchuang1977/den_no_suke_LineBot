@@ -35,11 +35,17 @@ class scrape:
     def news(self):
         url = "https://technews.tw/"
         result = requests.get(url=url, headers=self.headers)
-        soup = BeautifulSoup(result.text)
+        soup = BeautifulSoup(result.text, 'html.parser')  # 加入解析器指定
         div = soup.find(id="content") 
+
+
+        # 加入None檢查
+        if not div:
+            return "找不到新聞內容，請檢查網頁結構或反爬蟲保護"
 
         news_list=[]
         for article in div.find_all("article")[:3]:
+            try:
             target = { 
                 "title": "",
                 "img_url": "",
@@ -51,5 +57,6 @@ class scrape:
             target["news_url"] = article.find("div", class_="img").find("a").get('href')
             target["img_url"] = article.find("div", class_="img").find("img").get('src')
             news_list.append(target)
-        
+            except AttributeError:  # 防止部分元素缺失報錯
+                continue
         return news_list

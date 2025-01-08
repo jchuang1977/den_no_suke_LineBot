@@ -4,4 +4,4 @@ requests
 beautifulsoup4
 pyChatGPT
 psycopg2
-openai
+openai==0.28
