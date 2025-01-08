@@ -52,47 +52,65 @@ def handle_message(event):
     elif msg == "最新新聞追追追":
         myScrape = scrape()
         news_list = myScrape.news()
+
+        # 確保 news_list 是一個列表，且每個元素都是字典
+        if not isinstance(news_list, list) or not all(isinstance(item, dict) for item in news_list):
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="抱歉，目前無法取得最新新聞資訊。")
+            )
+            return
+
+        # 確保至少有三筆資料
+        if len(news_list) < 3:
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="新聞數量不足，請稍後再試。")
+            )
+            return
+
         carousel_template_message = TemplateSendMessage(
-             alt_text='最新新聞推薦',
-             template=CarouselTemplate(
-                 columns=[
-                     CarouselColumn(
-                         thumbnail_image_url=news_list[0]["img_url"],
-                         title=news_list[0]["title"],#title
-                         text=f'作者:{news_list[0]["role"]}',#作者
-                         actions=[
-                             URIAction(
-                                 label='馬上查看',
-                                 uri=news_list[0]["news_url"]#文章連結
-                             )
-                         ]
-                     ),
-                     CarouselColumn(
-                         thumbnail_image_url=news_list[1]["img_url"],
-                         title=news_list[1]["title"],
-                         text=f'作者:{news_list[1]["role"]}',
-                         actions=[
-                             URIAction(
-                                 label='馬上查看',
-                                 uri=news_list[1]["news_url"]
-                             )
-                         ]
-                     ),
-                     CarouselColumn(
-                         thumbnail_image_url=news_list[2]["img_url"],
-                         title=news_list[2]["title"],
-                         text=f'作者:{news_list[2]["role"]}',
-                         actions=[
-                             URIAction(
-                                 label='馬上查看',
-                                 uri=news_list[2]["news_url"]
-                             )
-                         ]
-                     )
-                 ]
-             )
+            alt_text='最新新聞推薦',
+            template=CarouselTemplate(
+                columns=[
+                    CarouselColumn(
+                        thumbnail_image_url=news_list[0].get("img_url", ""),
+                        title=news_list[0].get("title", "無標題"),
+                        text=f'作者:{news_list[0].get("role", "未知作者")}',
+                        actions=[
+                            URIAction(
+                                label='馬上查看',
+                                uri=news_list[0].get("news_url", "#")
+                            )
+                        ]
+                    ),
+                    CarouselColumn(
+                        thumbnail_image_url=news_list[1].get("img_url", ""),
+                        title=news_list[1].get("title", "無標題"),
+                        text=f'作者:{news_list[1].get("role", "未知作者")}',
+                        actions=[
+                            URIAction(
+                                label='馬上查看',
+                                uri=news_list[1].get("news_url", "#")
+                            )
+                        ]
+                    ),
+                    CarouselColumn(
+                        thumbnail_image_url=news_list[2].get("img_url", ""),
+                        title=news_list[2].get("title", "無標題"),
+                        text=f'作者:{news_list[2].get("role", "未知作者")}',
+                        actions=[
+                            URIAction(
+                                label='馬上查看',
+                                uri=news_list[2].get("news_url", "#")
+                            )
+                        ]
+                    )
+                ]
+            )
         )
         line_bot_api.reply_message(event.reply_token, carousel_template_message)
+
         
     else:          
         openai.api_key = os.getenv('SESSION_TOKEN')
