@@ -3,12 +3,7 @@ from bs4 import BeautifulSoup
 import random
 import os
 
-class scrape:
-    def __init__(self):
-        self.headers = {
-            "User-Agent": os.getenv('User_Agent')
-          }
-        
+class scrape:        
     def scrape(self):
         goods_list = ["滑鼠", "鍵盤", "喇叭", "耳機", "麥克風", "電競椅", "辦公椅", "繪圖板", "office軟體",
               "電競螢幕", "網路攝影機", "電腦機殼", "固態硬碟", "傳統硬碟", "顯示卡", "CPU", "主機板", "記憶體", "電源供應器",
@@ -17,9 +12,10 @@ class scrape:
               "Turtle Beach", "鐵三角", "微星", "賽德斯", "威剛", "樹梅派", "Arduino", "ESP32"]
         x = random.randrange(50)
         user_input = goods_list[x]
-        result = requests.get(url=f"https://feebee.com.tw/s/?q={user_input}", headers=self.headers)
-        soup = BeautifulSoup(result.text)
-        
+        headers = {"User-Agent": "Mozilla/5.0"}  # 確保用戶代理正常
+        result = requests.get(url=f"https://feebee.com.tw/s/?q={user_input}", headers=headers)
+        soup = BeautifulSoup(result.text, 'html.parser')
+
         options = soup.findAll("h3", class_="large")
         price = soup.findAll("span", class_="price ellipsis xlarge")
         link = soup.findAll("a", class_="campaign_link campaign_link_buy")
