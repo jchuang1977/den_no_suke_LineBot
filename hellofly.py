@@ -49,11 +49,10 @@ def handle_message(event):
 '''        
         myDatabase = database(user_name, uid)
         v = myDatabase.add_food()
-'''        
+'''    
         line_bot_api.reply_message(
             event.reply_token,
-            #TextSendMessage(text=f"{user_name}成功餵食(v)次"))
-            TextSendMessage(text=f"{user_name}成功餵食?次"))
+            TextSendMessage(text=f"{user_name}成功餵食N次"))
 
 '''    
     elif msg == "查看餵食排行榜": 
