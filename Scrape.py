@@ -20,17 +20,29 @@ class scrape:
         result = requests.get(url=f"https://feebee.com.tw/s/?q={user_input}", headers=self.headers)
         soup = BeautifulSoup(result.text)
         
-        options = soup.findAll("h3",class_="large")
-        price = soup.findAll("span",class_="price ellipsis xlarge")
-        link = soup.findAll("a",class_="campaign_link campaign_link_buy")
-        
+        options = soup.findAll("h3", class_="large")
+        price = soup.findAll("span", class_="price ellipsis xlarge")
+        link = soup.findAll("a", class_="campaign_link campaign_link_buy")
+
+        # 確保至少有一筆資料可用
+        if not options or not price or not link:
+            return "抱歉，目前找不到足夠的商品資訊。"
+
+        # 使用最小的長度以避免索引錯誤
         lst = ""
-        for i in range(3):
-            lst += f"商品名稱: {options[i].getText()}\n"
-            lst += f"價格: {price[i].getText()}\n"
+        max_items = min(3, len(options), len(price), len(link))
+
+        for i in range(max_items):
+            lst += f"商品名稱: {options[i].getText().strip()}\n"
+            lst += f"價格: {price[i].getText().strip()}\n"
             lst += f"購買連結: {link[i].get('href')}\n"
-            
+
+        # 若資料不足3筆，提示用戶
+        if max_items < 3:
+            lst += f"\n注意：僅找到 {max_items} 筆商品資訊。\n"
+
         return lst
+
     
     def news(self):
         url = "https://technews.tw/"
