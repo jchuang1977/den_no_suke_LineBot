@@ -1,74 +1,130 @@
+from flask import Flask, request, abort
+
+import openai
 import os
-import requests
-from flask import Flask, request, abort, url_for
+from pyChatGPT import ChatGPT
+from Scrape import scrape
+#from Postgresql import database
+
+
 from linebot import (
- LineBotApi, WebhookHandler
+    LineBotApi, WebhookHandler
 )
 from linebot.exceptions import (
- InvalidSignatureError
+    InvalidSignatureError
 )
-from linebot.models import (
- MessageEvent, TextMessage, TextSendMessage,
-)
+from linebot.models import *
 
 app = Flask(__name__)
 
-# 設定 LINE Bot 的認證資訊
 line_bot_api = LineBotApi(os.getenv('LINE_CHANNEL_ACCESS_TOKEN'))
 handler = WebhookHandler(os.getenv('LINE_CHANNEL_SECRET'))
 
-
-
 @app.route("/callback", methods=['POST'])
 def callback():
- # get X-Line-Signature header value
- signature = request.headers['X-Line-Signature']
- 
- # get request body as text
- body = request.get_data(as_text=True)
- app.logger.info("Request body: " + body)
+    # get X-Line-Signature header value
+    signature = request.headers['X-Line-Signature']
 
- # handle webhook body
- try:
-  handler.handle(body, signature)
- except InvalidSignatureError:
-  abort(400)
+    # get request body as text
+    body = request.get_data(as_text=True)
+    app.logger.info("Request body: " + body)
 
- return 'OK'
+    # handle webhook body
+    try:
+        handler.handle(body, signature)
+    except InvalidSignatureError:
+        print("Invalid signature. Please check your channel access token/channel secret.")
+        abort(400)
+
+    return 'OK'
+
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
- line_bot_api.reply_message(
-  event.reply_token,
-  TextSendMessage(text=event.message.text))
+    msg = str(event.message.text)         
+    if msg == "熱銷商品比價GO":       
+        myScrape = scrape()
+        output = myScrape.scrape()       
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=str(output)))
+    
+    elif msg == "最新新聞追追追":
+        myScrape = scrape()
+        news_list = myScrape.news()
 
+        # 確保 news_list 是一個列表，且每個元素都是字典
+        if not isinstance(news_list, list) or not all(isinstance(item, dict) for item in news_list):
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="抱歉，目前無法取得最新新聞資訊。")
+            )
+            return
 
-@app.route('/message', methods=['POST'])  
-def message():  
-    user_id = request.form.get('user_id')  
-    message = request.form.get('message')  
-  
-    if user_id not in user_messages:  
-        user_messages[user_id] = []  
-    user_messages[user_id].append(message)  
-  
-    return 'Hello, your message has been received.'
+        # 確保至少有三筆資料
+        if len(news_list) < 3:
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="新聞數量不足，請稍後再試。")
+            )
+            return
 
-@handler.add(MessageEvent, message=TextMessage)  
-def handle_message(event):  
-    user_id = event.source.user_id  
-    message = event.message.text  
-  
-    message_url = url_for('message', _external=True)
-    response_message = requests.post(message_url, data={  
-        'user_id': user_id,  
-        'message': message  
-    })  
-  
-    line_bot_api.reply_message(  
-        event.reply_token,  
-        TextSendMessage(text=response_message)  
-    )
+        carousel_template_message = TemplateSendMessage(
+            alt_text='最新新聞推薦',
+            template=CarouselTemplate(
+                columns=[
+                    CarouselColumn(
+                        thumbnail_image_url=news_list[0].get("img_url", ""),
+                        title=news_list[0].get("title", "無標題"),
+                        text=f'作者:{news_list[0].get("role", "未知作者")}',
+                        actions=[
+                            URIAction(
+                                label='馬上查看',
+                                uri=news_list[0].get("news_url", "#")
+                            )
+                        ]
+                    ),
+                    CarouselColumn(
+                        thumbnail_image_url=news_list[1].get("img_url", ""),
+                        title=news_list[1].get("title", "無標題"),
+                        text=f'作者:{news_list[1].get("role", "未知作者")}',
+                        actions=[
+                            URIAction(
+                                label='馬上查看',
+                                uri=news_list[1].get("news_url", "#")
+                            )
+                        ]
+                    ),
+                    CarouselColumn(
+                        thumbnail_image_url=news_list[2].get("img_url", ""),
+                        title=news_list[2].get("title", "無標題"),
+                        text=f'作者:{news_list[2].get("role", "未知作者")}',
+                        actions=[
+                            URIAction(
+                                label='馬上查看',
+                                uri=news_list[2].get("news_url", "#")
+                            )
+                        ]
+                    )
+                ]
+            )
+        )
+        line_bot_api.reply_message(event.reply_token, carousel_template_message)
 
+        
+    else:          
+        openai.api_key = os.getenv('SESSION_TOKEN')
+        response = openai.Completion.create(
+                engine='text-davinci-003',
+                prompt=msg,
+                max_tokens=300,
+                temperature=0.5
+                )
+        completed_text = response['choices'][0]['text']
+        
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text = completed_text[2:]))
+        
 if __name__ == "__main__":
- app.run()
+    app.run()

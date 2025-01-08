@@ -43,32 +43,36 @@ class scrape:
 
         return lst
 
-    
+
     def news(self):
         url = "https://technews.tw/"
-        result = requests.get(url=url, headers=self.headers)
-        soup = BeautifulSoup(result.text, 'html.parser')  # 加入解析器指定
-        div = soup.find(id="content") 
+        headers = {"User-Agent": "Mozilla/5.0"}  # 確保用戶代理正常
+        result = requests.get(url, headers=headers)
+        soup = BeautifulSoup(result.text, 'html.parser')
 
-
-        # 加入None檢查
+        # 使用更通用的選擇器來匹配文章區塊
+        div = soup.find("div", id="content")
         if not div:
             return "找不到新聞內容，請檢查網頁結構或反爬蟲保護"
+        
+        # 初始化新聞列表
+        news_list = []
 
-        news_list=[]
+        # 嘗試抓取文章資訊
         for article in div.find_all("article")[:3]:
             try:
-                target = { 
-                    "title": "",
-                    "img_url": "",
-                    "role": "",
-                    "news_url": ""
-                    }
-                target["title"] = article.find("h1", class_="entry-title").text
-                target["role"] = article.find_all("span", class_="body")[0].text
-                target["news_url"] = article.find("div", class_="img").find("a").get('href')
-                target["img_url"] = article.find("div", class_="img").find("img").get('src')
+                target = {
+                    "title": article.select_one("h1.entry-title").text.strip(),
+                    "role": article.select_one("span.body").text.strip(),
+                    "news_url": article.select_one("div.img a")["href"],
+                    "img_url": article.select_one("div.img img")["src"]
+                }
                 news_list.append(target)
-            except AttributeError:  # 防止部分元素缺失報錯
+            except (AttributeError, TypeError):
                 continue
+
+        # 偵測是否為空列表
+        if not news_list:
+            return "未能成功擷取新聞，請檢查網頁結構或反爬蟲保護。"
+
         return news_list
