@@ -49,7 +49,7 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text=str(output)))
     
-    elif msg == "最新新聞追追追":
+    elif msg == "news":
         myScrape = scrape()
         news_list = myScrape.news()
 
@@ -114,13 +114,17 @@ def handle_message(event):
         
     else:          
         openai.api_key = os.getenv('SESSION_TOKEN')
-        response = openai.Completion.create(
-                engine='text-davinci-003',
-                prompt=msg,
-                max_tokens=300,
-                temperature=0.5
-                )
-        completed_text = response['choices'][0]['text']
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # 或者使用最新的模型，如 gpt-4
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": msg}
+            ],
+            max_tokens=300,
+            temperature=0.5
+        )
+
+        completed_text = response['choices'][0]['message']['content']
         
         line_bot_api.reply_message(
             event.reply_token,
