@@ -41,33 +41,8 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    msg = str(event.message.text)
-    if msg == "餵食電之助":
-        profile = line_bot_api.get_profile(event.source.user_id)
-        user_name = profile.display_name #使用者名稱
-        uid = profile.user_id # 發訊者ID
-'''        
-        myDatabase = database(user_name, uid)
-        v = myDatabase.add_food()
-'''    
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=f"{user_name}成功餵食N次"))
-
-'''    
-    elif msg == "查看餵食排行榜": 
-        profile = line_bot_api.get_profile(event.source.user_id)
-        user_name = profile.display_name #使用者名稱
-        uid = profile.user_id # 發訊者ID
-        
-        myDatabase = database(user_name, uid)
-        v = myDatabase.select_top()
-        
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=v))
-'''            
-    elif msg == "熱銷商品比價GO":       
+    msg = str(event.message.text)         
+    if msg == "熱銷商品比價GO":       
         myScrape = scrape()
         output = myScrape.scrape()       
         line_bot_api.reply_message(
