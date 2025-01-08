@@ -43,4 +43,4 @@ class database:
             
         conn.commit()
         conn.close()
-        return s    
+        return s
