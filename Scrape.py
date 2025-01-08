@@ -46,17 +46,17 @@ class scrape:
         news_list=[]
         for article in div.find_all("article")[:3]:
             try:
-            target = { 
-                "title": "",
-                "img_url": "",
-                "role": "",
-                "news_url": ""
-                }
-            target["title"] = article.find("h1", class_="entry-title").text
-            target["role"] = article.find_all("span", class_="body")[0].text
-            target["news_url"] = article.find("div", class_="img").find("a").get('href')
-            target["img_url"] = article.find("div", class_="img").find("img").get('src')
-            news_list.append(target)
+                target = { 
+                    "title": "",
+                    "img_url": "",
+                    "role": "",
+                    "news_url": ""
+                    }
+                target["title"] = article.find("h1", class_="entry-title").text
+                target["role"] = article.find_all("span", class_="body")[0].text
+                target["news_url"] = article.find("div", class_="img").find("a").get('href')
+                target["img_url"] = article.find("div", class_="img").find("img").get('src')
+                news_list.append(target)
             except AttributeError:  # 防止部分元素缺失報錯
                 continue
         return news_list
