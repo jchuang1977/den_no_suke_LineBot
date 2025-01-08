@@ -4,7 +4,7 @@ import openai
 import os
 from pyChatGPT import ChatGPT
 from Scrape import scrape
-from Postgresql import database
+#from Postgresql import database
 
 
 from linebot import (
@@ -46,14 +46,16 @@ def handle_message(event):
         profile = line_bot_api.get_profile(event.source.user_id)
         user_name = profile.display_name #使用者名稱
         uid = profile.user_id # 發訊者ID
-        
+'''        
         myDatabase = database(user_name, uid)
         v = myDatabase.add_food()
-        
+'''        
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text=f"{user_name}成功餵食{v}次"))
-    
+            #TextSendMessage(text=f"{user_name}成功餵食(v)次"))
+            TextSendMessage(text=f"{user_name}成功餵食?次"))
+
+'''    
     elif msg == "查看餵食排行榜": 
         profile = line_bot_api.get_profile(event.source.user_id)
         user_name = profile.display_name #使用者名稱
@@ -65,7 +67,7 @@ def handle_message(event):
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=v))
-            
+'''            
     elif msg == "熱銷商品比價GO":       
         myScrape = scrape()
         output = myScrape.scrape()       
