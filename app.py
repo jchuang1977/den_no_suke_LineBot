@@ -5,7 +5,7 @@ import os
 from pyChatGPT import ChatGPT
 from Scrape import scrape
 #from Postgresql import database
-
+from imdb import IMDb
 
 from linebot import (
     LineBotApi, WebhookHandler
@@ -121,11 +121,11 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, carousel_template_message)
 
     else:
-        myScrape = scrape()
-        movie_list = myScrape.movies(msg)
+        
+        movie_list = get_movies(msg)
 
         carousel_template_message = TemplateSendMessage(
-            alt_text='最新新聞推薦',
+            alt_text='查詢電影結果',
             template=CarouselTemplate(
                 columns=[
                     CarouselColumn(
@@ -164,6 +164,41 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text = completed_text[2:]))
 '''
+
+
+def get_movies(movie_name):
+    # 創建 IMDb 物件
+    ia = IMDb()
+    
+    # 使用 IMDbPY 查詢電影資訊
+    search_results = ia.search_movie(movie_name)
+
+    movie_info = {}
+    
+    if search_results:
+        # 取得第一個搜尋結果的 ID
+        movie_id = search_results[0].movieID
+        
+        # 根據 ID 取得電影詳細資訊
+        movie = ia.get_movie(movie_id)
+        
+        # 整理電影資訊到字典中
+        movie_info['title'] = movie['title']
+        movie_info['year'] = movie['year']
+        movie_info['rating'] = movie['rating']
+        movie_info['plot'] = movie['plot'][0]
+        
+        # 獲取 IMDb 鏈結
+        imdb_link = f"https://www.imdb.com/title/{movie_id}/"
+        movie_info['link'] = imdb_link
+
+        # 獲取電影海報影像連結
+        poster_url = ia.get_imdbURL(movie)
+        movie_info['poster'] = poster_url
+    else:
+        movie_info['error'] = "找不到相關電影資訊。"
+    
+    return movie_info
 
 
 if __name__ == "__main__":

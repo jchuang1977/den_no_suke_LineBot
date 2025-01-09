@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import random
 import os
-from imdb import IMDb
+
 
 class scrape:        
     def scrape(self):
@@ -39,40 +39,6 @@ class scrape:
             lst += f"\n注意：僅找到 {max_items} 筆商品資訊。\n"
 
         return lst
-
-    def movies(movie_name):
-        # 創建 IMDb 物件
-        ia = IMDb()
-        
-        # 使用 IMDbPY 查詢電影資訊
-        search_results = ia.search_movie(movie_name)
-
-        movie_info = {}
-        
-        if search_results:
-            # 取得第一個搜尋結果的 ID
-            movie_id = search_results[0].movieID
-            
-            # 根據 ID 取得電影詳細資訊
-            movie = ia.get_movie(movie_id)
-            
-            # 整理電影資訊到字典中
-            movie_info['title'] = movie['title']
-            movie_info['year'] = movie['year']
-            movie_info['rating'] = movie['rating']
-            movie_info['plot'] = movie['plot'][0]
-            
-            # 獲取 IMDb 鏈結
-            imdb_link = f"https://www.imdb.com/title/{movie_id}/"
-            movie_info['link'] = imdb_link
-
-            # 獲取電影海報影像連結
-            poster_url = ia.get_imdbURL(movie)
-            movie_info['poster'] = poster_url
-        else:
-            movie_info['error'] = "找不到相關電影資訊。"
-        
-        return movie_info
 
     def news(self):
         url = "https://technews.tw/"
