@@ -181,22 +181,40 @@ def get_movies(movie_name):
         
         # 根據 ID 取得電影詳細資訊
         movie = ia.get_movie(movie_id)
-        
+
+        print(imdb_link)
+
+
         # 整理電影資訊到字典中
-        movie_info['title'] = movie['title']
-        movie_info['year'] = movie['year']
-        movie_info['rating'] = movie['rating']
-        movie_info['plot'] = movie['plot'][0]
+        #movie_info['title'] = movie['title']
+        #movie_info['year'] = movie['year']
+        #movie_info['rating'] = movie['rating']
+        #movie_info['plot'] = movie['plot'][0]
         
         # 獲取 IMDb 鏈結
         imdb_link = f"https://www.imdb.com/title/{movie_id}/"
-        movie_info['link'] = imdb_link
+        #movie_info['link'] = imdb_link
 
         # 獲取電影海報影像連結
         poster_url = ia.get_imdbURL(movie)
-        movie_info['poster'] = poster_url
+        #movie_info['poster'] = poster_url
+
+        target = {
+            "title": movie['title'],
+            "plot": movie['plot'][0],
+            "link": imdb_link,
+            "poster": poster_url
+        }
+        movie_info.append(target)
+
     else:
-        movie_info['error'] = "找不到相關電影資訊。"
+        target = {
+            "title": "找不到相關電影資訊",
+            "plot": "找不到相關電影資訊",
+            "link": "https://www.imdb.com",
+            "poster": "https://www.imdb.com"
+        }
+        movie_info.append(target)
     
     return movie_info
 
