@@ -48,7 +48,16 @@ def handle_message(event):
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=str(output)))
-    
+
+    elif msg == "movies":
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text="請輸入電影英文名稱")
+        )
+        return
+
+
+
     elif msg == "news":
         myScrape = scrape()
         news_list = myScrape.news()
@@ -111,7 +120,32 @@ def handle_message(event):
         )
         line_bot_api.reply_message(event.reply_token, carousel_template_message)
 
-        
+    else:
+        myScrape = scrape()
+        movie_list = myScrape.movies(msg)
+
+        carousel_template_message = TemplateSendMessage(
+            alt_text='最新新聞推薦',
+            template=CarouselTemplate(
+                columns=[
+                    CarouselColumn(
+                        thumbnail_image_url=movie_list[0].get("poster", ""),
+                        title=movie_list[0].get("title", "無標題"),
+                        text=f'大網:{movie_list[0].get("plot", "未知作者")}',
+                        actions=[
+                            URIAction(
+                                label='詳細資料',
+                                uri=movie_list[0].get("link", "#")
+                            )
+                        ]
+                    )
+                ]
+            )
+        )
+
+
+        line_bot_api.reply_message(event.reply_token, carousel_template_message)
+'''        
     else:          
         openai.api_key = os.getenv('SESSION_TOKEN')
         response = openai.ChatCompletion.create(
@@ -129,6 +163,8 @@ def handle_message(event):
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text = completed_text[2:]))
-        
+'''
+
+
 if __name__ == "__main__":
     app.run()
