@@ -182,9 +182,6 @@ def get_movies(movie_name):
         # 根據 ID 取得電影詳細資訊
         movie = ia.get_movie(movie_id)
 
-        print(imdb_link)
-
-
         # 整理電影資訊到字典中
         #movie_info['title'] = movie['title']
         #movie_info['year'] = movie['year']
@@ -194,6 +191,8 @@ def get_movies(movie_name):
         # 獲取 IMDb 鏈結
         imdb_link = f"https://www.imdb.com/title/{movie_id}/"
         #movie_info['link'] = imdb_link
+
+        print(imdb_link)
 
         # 獲取電影海報影像連結
         poster_url = ia.get_imdbURL(movie)
