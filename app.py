@@ -121,30 +121,38 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, carousel_template_message)
 
     else:
+        ia = IMDb()
         
-        movie_list = get_movies(msg)
+        search_results = ia.search_movie(msg)
+    
+        if search_results:
+            # 取得第一個搜尋結果的 ID
+            movie_id = search_results[0].movieID
+            
+            # 根據 ID 取得電影詳細資訊
+            movie = ia.get_movie(movie_id)
+            
+            # 獲取 IMDb 鏈結
+            imdb_link = f"https://www.imdb.com/title/{movie_id}/"
+            #movie_info['link'] = imdb_link
 
-        carousel_template_message = TemplateSendMessage(
-            alt_text='查詢電影結果',
-            template=CarouselTemplate(
-                columns=[
-                    CarouselColumn(
-                        thumbnail_image_url=movie_list[0].get("poster", ""),
-                        title=movie_list[0].get("title", "無標題"),
-                        text=f'大網:{movie_list[0].get("plot", "未知作者")}',
-                        actions=[
-                            URIAction(
-                                label='詳細資料',
-                                uri=movie_list[0].get("link", "#")
-                            )
-                        ]
-                    )
-                ]
-            )
-        )
+            print(imdb_link)
+
+            # 獲取電影海報影像連結
+            poster_url = ia.get_imdbURL(movie)
+            #movie_info['poster'] = poster_url
+            
+            title = movie['title']
+            plot = movie['plot']
+
+            
+            messages = [
+                TextSendMessage(text=f"電影名稱: {title}\n劇情大綱: {plot}\nIMDb 鏈結: {imdb_link}"),
+                ImageSendMessage(original_content_url=poster_url, preview_image_url=poster_url)
+            ]
 
 
-        line_bot_api.reply_message(event.reply_token, carousel_template_message)
+        line_bot_api.reply_message(event.reply_token, messages)
 '''        
     else:          
         openai.api_key = os.getenv('SESSION_TOKEN')
@@ -164,58 +172,6 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text = completed_text[2:]))
 '''
-
-
-def get_movies(movie_name):
-    # 創建 IMDb 物件
-    ia = IMDb()
-    
-    # 使用 IMDbPY 查詢電影資訊
-    search_results = ia.search_movie(movie_name)
-
-    movie_info = []
-    
-    if search_results:
-        # 取得第一個搜尋結果的 ID
-        movie_id = search_results[0].movieID
-        
-        # 根據 ID 取得電影詳細資訊
-        movie = ia.get_movie(movie_id)
-
-        # 整理電影資訊到字典中
-        #movie_info['title'] = movie['title']
-        #movie_info['year'] = movie['year']
-        #movie_info['rating'] = movie['rating']
-        #movie_info['plot'] = movie['plot'][0]
-        
-        # 獲取 IMDb 鏈結
-        imdb_link = f"https://www.imdb.com/title/{movie_id}/"
-        #movie_info['link'] = imdb_link
-
-        print(imdb_link)
-
-        # 獲取電影海報影像連結
-        poster_url = ia.get_imdbURL(movie)
-        #movie_info['poster'] = poster_url
-
-        target = {
-            "title": movie['title'],
-            "plot": movie['plot'][0],
-            "link": imdb_link,
-            "poster": poster_url
-        }
-        movie_info.append(target)
-
-    else:
-        target = {
-            "title": "找不到相關電影資訊",
-            "plot": "找不到相關電影資訊",
-            "link": "https://www.imdb.com",
-            "poster": "https://www.imdb.com"
-        }
-        movie_info.append(target)
-    
-    return movie_info
 
 
 if __name__ == "__main__":
