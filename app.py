@@ -133,21 +133,23 @@ def handle_message(event):
             movie = ia.get_movie(movie_id)
             
             # 獲取 IMDb 鏈結
-            imdb_link = f"https://www.imdb.com/title/{movie_id}/"
+            imdb_link = f"https://www.imdb.com/title/tt{movie_id}/"
             #movie_info['link'] = imdb_link
 
             print(imdb_link)
 
             # 獲取電影海報影像連結
-            poster_url = ia.get_imdbURL(movie)
+            #poster_url = ia.get_imdbURL(movie)
+            poster_url = movie.get('full-size cover url', '無海報')
             #movie_info['poster'] = poster_url
             
-            title = movie['title']
-            plot = movie['plot']
-
+            title = movie.get('title', '未知標題')
+            plot = movie.get('plot', ['無簡介'])[0]
+            rating = movie.get('rating', '無評分')
+            year = movie.get('year', '未知年份')
             
             messages = [
-                TextSendMessage(text=f"電影名稱: {title}\n劇情大綱: {plot}\nIMDb 鏈結: {imdb_link}"),
+                TextSendMessage(text=f"電影名稱: {title}\n劇情大綱: {plot}\n上映年份: {year}\nIMDb 鏈結: {imdb_link}"),
                 ImageSendMessage(original_content_url=poster_url, preview_image_url=poster_url)
             ]
 
