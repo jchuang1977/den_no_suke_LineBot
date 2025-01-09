@@ -173,7 +173,7 @@ def get_movies(movie_name):
     # 使用 IMDbPY 查詢電影資訊
     search_results = ia.search_movie(movie_name)
 
-    movie_info = {}
+    movie_info = []
     
     if search_results:
         # 取得第一個搜尋結果的 ID
